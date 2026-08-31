@@ -1,0 +1,25 @@
+{
+  "name": "Mis Metas de Ahorro",
+  "short_name": "Ahorro",
+  "description": "Herramienta personal para registrar y seguir tus metas de ahorro",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "scope": "./",
+  "background_color": "#12181B",
+  "theme_color": "#4FA687",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%234FA687' width='192' height='192'/><text x='50%' y='50%' font-size='110' font-family='serif' font-weight='bold' text-anchor='middle' dominant-baseline='middle' fill='white'>$</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%234FA687' width='512' height='512'/><text x='50%' y='50%' font-size='300' font-family='serif' font-weight='bold' text-anchor='middle' dominant-baseline='middle' fill='white'>$</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
