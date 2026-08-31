@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#12181B">
+  <meta name="description" content="Herramienta personal para registrar y seguir tus metas de ahorro">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%234FA687' width='180' height='180'/><text x='50%' y='50%' font-size='100' font-family='serif' font-weight='bold' text-anchor='middle' dominant-baseline='middle' fill='white'>$</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%234FA687' width='180' height='180'/><text x='50%' y='50%' font-size='100' font-family='serif' font-weight='bold' text-anchor='middle' dominant-baseline='middle' fill='white'>$</text></svg>">
+  <title>Mis Metas de Ahorro</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --ink: #12181B;
+      --surface: #1A2226;
+      --raised: #212B30;
+      --line: #2C373C;
+      --text: #EFEDE6;
+      --muted: #8FA0A6;
+      --jade: #4FA687;
+      --jadeDim: #2F6B5E;
+      --amber: #E3A84E;
+      --danger: #E2726A;
+    }
+
+    html, body {
+      font-family: 'Inter', sans-serif;
+      background: var(--ink);
+      color: var(--text);
+      height: 100%;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      overflow-y: auto;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 28px 20px 100px;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      background: var(--raised);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 40px;
+    }
+
+    .header-label {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+      margin-bottom: 4px;
+    }
+
+    .header-amount {
+      font-family: 'Fraunces', serif;
+      font-size: 44px;
+      font-weight: 500;
+      line-height: 1.05;
+      margin-bottom: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .header-meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Empty state */
+    .empty-state {
+      margin-top: 56px;
+    }
+
+    .empty-state h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    /* Goals list */
+    .goals-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 28px;
+    }
+
+    .goal-item {
+      border-bottom: 1px solid var(--line);
+      padding: 18px 0;
+      cursor: pointer;
+    }
+
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .goal-name {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .goal-percent {
+      font-size: 13px;
+    }
+
+    .goal-percent.done {
+      color: var(--amber);
+    }
+
+    .goal-percent.pending {
+      color: var(--muted);
+    }
+
+    .goal-bar {
+      height: 3px;
+      background: var(--line);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .goal-bar-fill {
+      height: 100%;
+      background: var(--jade);
+      transition: width 0.4s ease;
+    }
+
+    .goal-bar-fill.done {
+      background: var(--amber);
+    }
+
+    .goal-amounts {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Goal detail */
+    .goal-detail {
+      padding-bottom: 20px;
+      display: none;
+    }
+
+    .goal-detail.open {
+      display: block;
+    }
+
+    .quick-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .quick-btn {
+      flex: 1;
+      background: var(--raised);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 0;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .quick-btn:active {
+      background: var(--line);
+    }
+
+    .custom-input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .custom-input-group input {
+      flex: 1;
+      background: var(--raised);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+
+    .custom-input-group input::placeholder {
+      color: var(--muted);
+    }
+
+    .custom-btn {
+      background: var(--jade);
+      border: none;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .custom-btn:active {
+      background: var(--jadeDim);
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--danger);
+      margin-top: 6px;
+    }
+
+    .history {
+      margin-top: 16px;
+    }
+
+    .history-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .history-item .amount {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .history-item .amount.positive {
+      color: var(--jade);
+    }
+
+    .history-item .amount.negative {
+      color: var(--danger);
+    }
+
+    .delete-btn {
+      margin-top: 16px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.2s;
+    }
+
+    .delete-btn:active {
+      color: var(--danger);
+    }
+
+    /* New goal button */
+    .new-goal-btn {
+      margin-top: 24px;
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .new-goal-btn:active {
+      background: var(--raised);
+    }
+
+    /* Modal backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      align-items: flex-end;
+      z-index: 10;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: 16px 16px 0 0;
+      padding: 24px 20px 32px;
+      border-top: 1px solid var(--line);
+    }
+
+    .modal-content h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--raised);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+
+    .form-input::placeholder {
+      color: var(--muted);
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .form-btn {
+      flex: 1;
+      border-radius: 8px;
+      padding: 13px 0;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .form-btn.cancel {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .form-btn.cancel:active {
+      background: var(--raised);
+    }
+
+    .form-btn.create {
+      background: var(--jade);
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .form-btn.create:active {
+      background: var(--jadeDim);
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="disclaimer">
+      ⚠️ Herramienta personal para registro de ahorro. No es asesoría financiera. Tus datos se guardan solo en tu dispositivo.
+    </div>
+
+    <div class="header">
+      <p class="header-label">Ahorrado en total</p>
+      <p class="header-amount" id="totalAmount">$0</p>
+      <p class="header-meta" id="headerMeta"></p>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <h2>Empezá tu primera meta</h2>
+      <p>Poné un objetivo y un monto. Cada vez que sumes plata, vas a ver el progreso acá.</p>
+      <button class="custom-btn" onclick="openNewGoal()" style="width: 100%;">Crear meta</button>
+    </div>
+
+    <div id="goalsList" class="goals-list"></div>
+
+    <button id="newGoalBtn" class="new-goal-btn" onclick="openNewGoal()" style="display: none;">+ Nueva meta</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h2>Nueva meta</h2>
+      
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input type="text" id="goalName" class="form-input" placeholder="Viaje a Bariloche" autofocus>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Monto objetivo (ARS)</label>
+        <input type="number" id="goalTarget" class="form-input" placeholder="300000" inputmode="decimal">
+      </div>
+
+      <p id="formError" class="error-msg" style="display: none;"></p>
+
+      <div class="form-buttons">
+        <button class="form-btn cancel" onclick="closeModal()">Cancelar</button>
+        <button class="form-btn create" onclick="submitNewGoal()">Crear</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    const STORAGE_KEY = 'metas-de-ahorro';
+    let goals = [];
+
+    // Utility
+    function uid() {
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    function formatARS(n) {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        maximumFractionDigits: 0,
+      }).format(Math.round(n));
+    }
+
+    function loadGoals() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      goals = stored ? JSON.parse(stored) : [];
+    }
+
+    function saveGoals() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+    }
+
+    function updateUI() {
+      const totalSaved = goals.reduce((s, g) => s + g.saved, 0);
+      const totalTarget = goals.reduce((s, g) => s + g.target, 0);
+
+      document.getElementById('totalAmount').textContent = formatARS(totalSaved);
+
+      const headerMeta = document.getElementById('headerMeta');
+      if (totalTarget > 0) {
+        headerMeta.textContent = `de ${formatARS(totalTarget)} en metas activas`;
+      } else {
+        headerMeta.textContent = '';
+      }
+
+      // Empty state
+      const emptyState = document.getElementById('emptyState');
+      const goalsList = document.getElementById('goalsList');
+      const newGoalBtn = document.getElementById('newGoalBtn');
+
+      if (goals.length === 0) {
+        emptyState.style.display = 'block';
+        goalsList.innerHTML = '';
+        newGoalBtn.style.display = 'none';
+      } else {
+        emptyState.style.display = 'none';
+        newGoalBtn.style.display = 'block';
+        renderGoals();
+      }
+    }
+
+    function renderGoals() {
+      const goalsList = document.getElementById('goalsList');
+      goalsList.innerHTML = goals.map((g, idx) => {
+        const pct = g.target > 0 ? Math.min(1, g.saved / g.target) : 0;
+        const done = g.saved >= g.target && g.target > 0;
+        const percent = done ? 'Completa' : Math.round(pct * 100) + '%';
+
+        return `
+          <div class="goal-item">
+            <div onclick="toggleGoal('${g.id}')">
+              <div class="goal-header">
+                <span class="goal-name">${g.name}</span>
+                <span class="goal-percent ${done ? 'done' : 'pending'}">${percent}</span>
+              </div>
+              <div class="goal-bar">
+                <div class="goal-bar-fill ${done ? 'done' : ''}" style="width: ${pct * 100}%"></div>
+              </div>
+              <div class="goal-amounts">
+                <span>${formatARS(g.saved)}</span>
+                <span>de ${formatARS(g.target)}</span>
+              </div>
+            </div>
+
+            <div class="goal-detail" id="detail-${g.id}">
+              <div class="quick-buttons">
+                <button class="quick-btn" onclick="addContribution('${g.id}', 1000)">+${formatARS(1000).replace('ARS', '').trim()}</button>
+                <button class="quick-btn" onclick="addContribution('${g.id}', 5000)">+${formatARS(5000).replace('ARS', '').trim()}</button>
+                <button class="quick-btn" onclick="addContribution('${g.id}', 10000)">+${formatARS(10000).replace('ARS', '').trim()}</button>
+              </div>
+
+              <div class="custom-input-group">
+                <input type="number" id="custom-${g.id}" placeholder="Monto (usá - para retirar)" inputmode="decimal">
+                <button class="custom-btn" onclick="submitCustom('${g.id}')">Sumar</button>
+              </div>
+              <p id="error-${g.id}" class="error-msg" style="display: none;"></p>
+
+              ${g.contributions.length > 0 ? `
+                <div class="history">
+                  <p class="history-label">Movimientos recientes</p>
+                  ${g.contributions.slice(0, 5).map(c => {
+                    const date = new Date(c.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+                    const isPositive = c.amount >= 0;
+                    return `
+                      <div class="history-item">
+                        <span>${date}</span>
+                        <span class="amount ${isPositive ? 'positive' : 'negative'}">
+                          ${isPositive ? '+' : ''}${formatARS(c.amount)}
+                        </span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              ` : ''}
+
+              <button class="delete-btn" onclick="deleteGoal('${g.id}')">Eliminar meta</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleGoal(goalId) {
+      const detail = document.getElementById(`detail-${goalId}`);
+      detail.classList.toggle('open');
+    }
+
+    function addContribution(goalId, amount) {
+      const goal = goals.find(g => g.id === goalId);
+      if (goal) {
+        goal.saved = Math.max(0, goal.saved + amount);
+        goal.contributions.unshift({
+          id: uid(),
+          amount: amount,
+          date: Date.now()
+        });
+        saveGoals();
+        updateUI();
+        document.getElementById(`detail-${goalId}`).classList.add('open');
+      }
+    }
+
+    function submitCustom(goalId) {
+      const input = document.getElementById(`custom-${goalId}`);
+      const errorMsg = document.getElementById(`error-${goalId}`);
+      const val = parseFloat(input.value.replace(',', '.'));
+
+      if (!input.value || isNaN(val) || val === 0) {
+        errorMsg.textContent = 'Ingresá un monto válido';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      const goal = goals.find(g => g.id === goalId);
+      if (goal) {
+        goal.saved = Math.max(0, goal.saved + Math.round(val));
+        goal.contributions.unshift({
+          id: uid(),
+          amount: Math.round(val),
+          date: Date.now()
+        });
+        input.value = '';
+        errorMsg.style.display = 'none';
+        saveGoals();
+        updateUI();
+        document.getElementById(`detail-${goalId}`).classList.add('open');
+      }
+    }
+
+    function deleteGoal(goalId) {
+      goals = goals.filter(g => g.id !== goalId);
+      saveGoals();
+      updateUI();
+    }
+
+    function openNewGoal() {
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+      document.getElementById('goalName').value = '';
+      document.getElementById('goalTarget').value = '';
+      document.getElementById('formError').style.display = 'none';
+    }
+
+    function submitNewGoal() {
+      const name = document.getElementById('goalName').value.trim();
+      const target = parseFloat(document.getElementById('goalTarget').value.replace(',', '.'));
+      const errorMsg = document.getElementById('formError');
+
+      if (!name) {
+        errorMsg.textContent = 'Ponele un nombre a la meta';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      if (!document.getElementById('goalTarget').value || isNaN(target) || target <= 0) {
+        errorMsg.textContent = 'Ingresá un monto objetivo válido';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      goals.unshift({
+        id: uid(),
+        name: name,
+        target: Math.round(target),
+        saved: 0,
+        createdAt: Date.now(),
+        contributions: []
+      });
+
+      saveGoals();
+      updateUI();
+      closeModal();
+    }
+
+    // Modal backdrop click to close
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target.id === 'modal') {
+        closeModal();
+      }
+    });
+
+    // Init
+    loadGoals();
+    updateUI();
+  </script>
+</body>
+</html>
